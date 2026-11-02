@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HealthHub — Family Health Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f9f9fe; font-family: Inter, sans-serif; color: #1a1c20; }
+  a { color: #003466; text-decoration: none; }
+  a:hover { color: #1a4b84; text-decoration: underline; }
+  input, button { font-family: Inter, sans-serif; }
+  ::placeholder { color: #9aa0ab; }
+  button { cursor: pointer; }
+
+  .icon { display: inline-block; flex: none; }
+
+  /* ===== Shell ===== */
+  .app { min-height: 100vh; display: flex; background: #f9f9fe; position: relative; }
+
+  /* ===== Sidebar ===== */
+  .sidebar { width: 264px; flex: none; background: #003466; color: #fff; display: flex; flex-direction: column; padding: 24px 16px; position: sticky; top: 0; height: 100vh; }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 28px; }
+  .brand-name { font: 700 20px 'Atkinson Hyperlegible Next', Inter, sans-serif; }
+  .menu-label { font: 600 11px/16px Inter; letter-spacing: 0.08em; color: rgba(255,255,255,0.55); padding: 0 8px 10px; }
+  .nav { display: flex; flex-direction: column; gap: 4px; }
+  .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 9999px; color: rgba(255,255,255,0.75); background: none; border: none; font: 500 14px Inter; text-align: left; }
+  .nav-item:hover { background: rgba(255,255,255,0.08); }
+  .nav-item.active { background: rgba(255,255,255,0.16); color: #fff; font-weight: 600; }
+  .user-card { margin-top: auto; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.08); }
+  .user-avatar { width: 36px; height: 36px; flex: none; border-radius: 9999px; background: #d5e3ff; color: #144780; display: flex; align-items: center; justify-content: center; font: 700 14px 'Atkinson Hyperlegible Next', Inter, sans-serif; }
+  .user-name { font: 600 14px/18px Inter; }
+  .user-role { font: 400 12px/16px Inter; opacity: 0.6; }
+
+  /* ===== Main / header ===== */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .header { height: 76px; flex: none; display: flex; align-items: center; gap: 20px; padding: 0 32px; background: #fff; border-bottom: 1px solid #E9ECEF; position: sticky; top: 0; z-index: 30; }
+  .search { flex: 1 1 320px; max-width: 560px; min-width: 0; display: flex; align-items: center; gap: 12px; background: #f3f3f9; border: 1px solid #e2e2e7; border-radius: 9999px; padding: 13px 22px; }
+  .search input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; font: 400 15px Inter; color: #1a1c20; }
+  .header-spacer { flex: 1; }
+  .pills { display: flex; align-items: center; gap: 8px; }
+  .pill { display: flex; align-items: center; gap: 8px; padding: 5px 16px 5px 6px; border-radius: 9999px; background: #fff; border: 1px solid #e2e2e7; }
+  .pill.active { border: 2px solid #003466; background: #d5e3ff; }
+  .pill-avatar { width: 30px; height: 30px; flex: none; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font: 700 13px 'Atkinson Hyperlegible Next', Inter, sans-serif; }
+  .pill-name { font: 600 14px/18px Inter; color: #1a1c20; white-space: nowrap; }
+  .add-child { width: 36px; height: 36px; border-radius: 9999px; border: 1.5px dashed #c3c6d1; background: none; display: flex; align-items: center; justify-content: center; }
+  .add-child:hover { background: #f3f3f9; }
+  .bell-wrap { position: relative; }
+  .bell { position: relative; width: 44px; height: 44px; border-radius: 9999px; border: 1px solid #e2e2e7; background: #fff; display: flex; align-items: center; justify-content: center; }
+  .bell:hover { background: #f3f3f9; }
+  .bell-badge { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; border-radius: 9999px; background: #ba1a1a; color: #fff; font: 700 11px/20px Inter; text-align: center; padding: 0 5px; }
+  .bell-pop { position: absolute; top: 54px; right: 0; width: 380px; background: #fff; border: 1px solid #E9ECEF; border-radius: 12px; box-shadow: 0 4px 20px rgba(26,75,132,0.15); z-index: 50; overflow: hidden; }
+  .bell-pop-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 10px; }
+  .bell-pop-head span { font: 600 16px 'Atkinson Hyperlegible Next', Inter, sans-serif; }
+  .bell-pop-head a, .bell-pop-foot a { font: 600 13px Inter; }
+  .notif { display: flex; gap: 12px; padding: 14px 18px; border-top: 1px solid #f3f3f9; cursor: pointer; }
+  .notif-dot { width: 8px; height: 8px; flex: none; border-radius: 9999px; margin-top: 6px; }
+  .notif-t { font: 600 14px/20px Inter; color: #1a1c20; }
+  .notif-d { font: 400 13px/18px Inter; color: #424750; }
+  .notif-time { flex: none; font: 400 12px/20px Inter; color: #737781; }
+  .bell-pop-foot { padding: 12px 18px; border-top: 1px solid #f3f3f9; text-align: center; }
+
+  /* ===== Content ===== */
+  .content { padding: 32px; display: flex; flex-direction: column; gap: 24px; max-width: 1400px; width: 100%; margin: 0 auto; }
+  .title-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+  .eyebrow { font: 600 12px/16px Inter; letter-spacing: 0.05em; text-transform: uppercase; color: #737781; }
+  h1.page-title { margin: 6px 0 0; font: 700 32px/40px 'Atkinson Hyperlegible Next', Inter, sans-serif; letter-spacing: -0.02em; color: #1a1c20; }
+  .page-meta { margin-top: 4px; font: 400 14px/20px Inter; color: #737781; }
+  .btn-outline-teal { display: flex; align-items: center; gap: 8px; background: transparent; color: #006a63; border: 1.5px solid #006a63; border-radius: 9999px; padding: 10px 20px; font: 600 14px Inter; }
+  .btn-outline-teal:hover { background: #d8f5f1; }
+  .btn-navy { background: #003466; color: #fff; border: none; border-radius: 9999px; padding: 10px 20px; font: 600 14px Inter; }
+  .btn-navy:hover { background: #1a4b84; }
+  .btn-ghost-amber { background: transparent; color: #8a5a00; border: none; font: 600 14px Inter; padding: 10px 6px; }
+
+  .alert-banner { display: flex; align-items: center; gap: 16px; background: #FFF4DE; border: 1px solid #F2C879; border-radius: 16px; padding: 18px 24px; }
+  .alert-ico { width: 44px; height: 44px; flex: none; border-radius: 9999px; background: #ffdeac; display: flex; align-items: center; justify-content: center; }
+  .alert-title { font: 600 16px/22px Inter; color: #281900; }
+  .alert-body { font: 400 14px/20px Inter; color: #5c4a1e; }
+
+  .card { background: #fff; border: 1px solid #E9ECEF; border-radius: 16px; padding: 24px; }
+  .profile-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .col-label { font: 600 12px/16px Inter; letter-spacing: 0.05em; text-transform: uppercase; color: #737781; margin-bottom: 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border-radius: 9999px; padding: 6px 14px; font: 600 13px/18px Inter; }
+  .last-updated { margin-top: 16px; text-align: right; font: 600 12px/16px Inter; letter-spacing: 0.05em; text-transform: uppercase; color: #9aa0ab; }
+
+  .grid3 { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr) minmax(0,1fr); gap: 24px; align-items: start; }
+  .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .card-head h3 { margin: 0; flex: 1; font: 600 20px/28px 'Atkinson Hyperlegible Next', Inter, sans-serif; }
+  .count-badge { border-radius: 9999px; padding: 2px 12px; font: 600 13px/20px Inter; background: #ededf3; color: #424750; }
+  .count-badge.amber { background: #ffdeac; color: #8a5a00; }
+  .card-list { display: flex; flex-direction: column; gap: 16px; }
+  .card-link { font: 600 13px Inter; }
+
+  .appt { display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid #f0f0f5; border-radius: 12px; cursor: pointer; }
+  .appt:hover { background: #f9f9fe; }
+  .appt-date { width: 54px; flex: none; border-radius: 12px; background: #d5e3ff; color: #144780; display: flex; flex-direction: column; align-items: center; padding: 8px 0; }
+  .appt-mo { font: 600 11px/14px Inter; letter-spacing: 0.06em; }
+  .appt-day { font: 700 20px/24px 'Atkinson Hyperlegible Next', Inter, sans-serif; }
+  .appt-info { flex: 1; min-width: 0; overflow: hidden; }
+  .appt-t { font: 600 15px/20px Inter; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .appt-p { font: 400 13px/18px Inter; color: #737781; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .appt-time { flex: none; font: 600 13px Inter; color: #424750; }
+
+  .vax-row { display: flex; align-items: center; gap: 12px 14px; padding: 12px; border: 1px solid #F2C879; background: #FFF9EE; border-radius: 12px; flex-wrap: wrap; }
+  .vax-info { flex: 1; min-width: 150px; }
+  .tile { width: 40px; height: 40px; flex: none; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .vax-name { font: 600 15px/20px Inter; color: #281900; }
+  .vax-due { font: 400 13px/18px Inter; color: #737781; }
+  .days-chip { flex: none; border-radius: 9999px; padding: 4px 10px; font: 600 12px/16px Inter; background: #ffdeac; color: #8a5a00; }
+  .no-overdue { display: flex; align-items: center; gap: 12px; padding: 16px; background: #d8f5f1; border-radius: 12px; font: 600 14px/20px Inter; color: #00504a; }
+
+  .rec { display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid #f0f0f5; border-radius: 12px; }
+  .rec-f { font: 600 15px/20px Inter; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rec-d { font: 400 13px/18px Inter; color: #737781; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .recent-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .recent-head h3 { margin: 0; flex: 1; font: 600 20px/28px 'Atkinson Hyperlegible Next', Inter, sans-serif; }
+  .recent-hint { font: 400 13px Inter; color: #9aa0ab; }
+  .recent-row { display: flex; align-items: center; gap: 16px; padding: 14px 4px; border-top: 1px solid #f3f3f9; cursor: pointer; }
+  .recent-row:hover { background: #f9f9fe; }
+  .recent-t { font: 600 15px/20px Inter; }
+  .recent-c { font: 400 13px/18px Inter; color: #737781; }
+  .status-badge { flex: none; border-radius: 9999px; padding: 4px 12px; font: 600 12px/16px Inter; }
+  .recent-date { flex: none; width: 110px; text-align: right; font: 400 13px Inter; color: #737781; }
+  .recent-empty { padding: 20px 4px; font: 400 14px/20px Inter; color: #737781; border-top: 1px solid #f3f3f9; }
+  .recent-card { margin-bottom: 48px; }
+
+  /* ===== FAB ===== */
+  .fab-wrap { position: fixed; right: 32px; bottom: 32px; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; z-index: 40; }
+  .fab { display: flex; align-items: center; gap: 10px; background: #003466; color: #fff; border: none; border-radius: 9999px; padding: 14px 26px; font: 600 15px Inter; box-shadow: 0 8px 24px rgba(26,75,132,0.35); }
+  .fab:hover { background: #1a4b84; }
+  .add-pop { width: 290px; background: #fff; border: 1px solid #E9ECEF; border-radius: 12px; box-shadow: 0 4px 20px rgba(26,75,132,0.18); padding: 8px; }
+  .add-pop-label { font: 600 12px/16px Inter; letter-spacing: 0.05em; text-transform: uppercase; color: #737781; padding: 10px 12px 6px; }
+  .add-opt { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; cursor: pointer; }
+  .add-opt:hover { background: #f3f3f9; }
+  .add-opt .tile { width: 38px; height: 38px; }
+  .add-opt-t { font: 600 14px/18px Inter; }
+  .add-opt-d { font: 400 12px/16px Inter; color: #737781; }
+
+  /* ===== Modal ===== */
+  .overlay { position: fixed; inset: 0; background: rgba(26,28,32,0.45); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .modal { width: 560px; max-width: 100%; max-height: 90vh; overflow: auto; background: #fff; border-radius: 16px; box-shadow: 0 24px 60px rgba(26,75,132,0.3); padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+  .modal-head { display: flex; align-items: center; gap: 12px; }
+  .modal-title { font: 600 18px/24px 'Atkinson Hyperlegible Next', Inter, sans-serif; }
+  .modal-sub { font: 400 13px/18px Inter; color: #737781; }
+  .modal-x { width: 36px; height: 36px; flex: none; border-radius: 9999px; border: 1px solid #e2e2e7; background: #fff; display: flex; align-items: center; justify-content: center; }
+  .modal-x:hover { background: #f3f3f9; }
+  .choice { display: flex; align-items: center; gap: 14px; padding: 16px; border: 1px solid #e9ecef; border-radius: 12px; cursor: pointer; background: #fff; width: 100%; text-align: left; }
+  .choice:hover { background: #f3f3f9; }
+  .choice.scan:hover { background: #f3f7ff; border-color: #d5e3ff; }
+  .choice .tile { width: 44px; height: 44px; }
+  .choice-t { font: 600 15px/20px Inter; }
+  .choice-d { font: 400 13px/18px Inter; color: #737781; }
+  .ai-chip { flex: none; border-radius: 9999px; padding: 4px 10px; font: 600 11px/16px Inter; background: #d5e3ff; color: #144780; }
+  .scan-note { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #f8faff; border: 1px solid #d5e3ff; border-radius: 12px; font: 400 13px/18px Inter; color: #144780; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.full { grid-column: 1 / -1; }
+  .field label { font: 600 12px/16px Inter; letter-spacing: 0.04em; text-transform: uppercase; color: #737781; }
+  .field input { border: 1px solid #e2e2e7; border-radius: 10px; padding: 12px 14px; font: 400 14px Inter; outline-color: #003466; }
+  .modal-foot { display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-back { background: transparent; color: #424750; border: 1.5px solid #e2e2e7; border-radius: 9999px; padding: 10px 22px; font: 600 14px Inter; }
+  .btn-back:hover { background: #f3f3f9; }
+  .btn-save { background: #003466; color: #fff; border: none; border-radius: 9999px; padding: 10px 22px; font: 600 14px Inter; }
+  .btn-save:disabled { background: #c3c6d1; cursor: default; }
+  .success { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 16px 0 8px; text-align: center; }
+  .success-ico { width: 64px; height: 64px; border-radius: 9999px; background: #d8f5f1; display: flex; align-items: center; justify-content: center; }
+  .success-t { font: 600 20px/26px 'Atkinson Hyperlegible Next', Inter, sans-serif; }
+  .success-d { font: 400 14px/20px Inter; color: #737781; max-width: 380px; }
+
+  @media (max-width: 1100px) {
+    .grid3 { grid-template-columns: 1fr; }
+    .profile-grid { grid-template-columns: 1fr; }
+    .pill-name { display: none; }
+    .pill { padding-right: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="icon" data-icon="heart-pulse" data-color="#8bf1e6" data-size="26"></span>
+      <span class="brand-name">HealthHub</span>
+    </div>
+    <div class="menu-label">MENU</div>
+    <nav class="nav">
+      <button class="nav-item active"><span class="icon" data-icon="layout-dashboard" data-color="#ffffff" data-size="20"></span>Dashboard</button>
+      <button class="nav-item"><span class="icon" data-icon="folder-open" data-color="rgba(255,255,255,0.75)" data-size="20"></span>Medical Records</button>
+      <button class="nav-item"><span class="icon" data-icon="printer" data-color="rgba(255,255,255,0.75)" data-size="20"></span>Export &amp; Print</button>
+      <button class="nav-item"><span class="icon" data-icon="share-2" data-color="rgba(255,255,255,0.75)" data-size="20"></span>Sharing</button>
+      <button class="nav-item"><span class="icon" data-icon="settings" data-color="rgba(255,255,255,0.75)" data-size="20"></span>Settings</button>
+    </nav>
+    <div class="user-card">
+      <div class="user-avatar">M</div>
+      <div style="min-width:0">
+        <div class="user-name">Maria Alvarez</div>
+        <div class="user-role">Account owner</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== Main ===== -->
+  <div class="main">
+    <header class="header">
+      <div class="search">
+        <span class="icon" data-icon="search" data-color="#737781" data-size="20"></span>
+        <input id="searchInput" placeholder="Search records" autocomplete="off" aria-label="Search records">
+      </div>
+      <div class="header-spacer"></div>
+      <div class="pills" id="pills"></div>
+      <div class="bell-wrap">
+        <button class="bell" id="bellBtn" aria-label="Notifications">
+          <span class="icon" data-icon="bell" data-color="#424750" data-size="20"></span>
+          <span class="bell-badge">2</span>
+        </button>
+        <div id="bellPop"></div>
+      </div>
+    </header>
+
+    <main class="content" id="content"></main>
+  </div>
+
+  <!-- ===== FAB ===== -->
+  <div class="fab-wrap">
+    <div id="addPop"></div>
+    <button class="fab" id="fabBtn">
+      <span class="icon" data-icon="plus" data-color="#ffffff" data-size="20"></span>
+      Smart Add
+    </button>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+/* ================= Icons (lucide via mask, as in the source design) ================= */
+function iconHTML(name, color, size) {
+  return '<span class="icon" style="width:' + size + 'px;height:' + size + 'px;background:' + color +
+    ';-webkit-mask:url(https://unpkg.com/lucide-static@0.462.0/icons/' + name + '.svg) center/contain no-repeat;' +
+    'mask:url(https://unpkg.com/lucide-static@0.462.0/icons/' + name + '.svg) center/contain no-repeat"></span>';
+}
+// hydrate static placeholders
+document.querySelectorAll('.icon[data-icon]').forEach(el => {
+  const { icon, color, size } = el.dataset;
+  el.style.width = size + 'px'; el.style.height = size + 'px'; el.style.background = color;
+  const url = 'url(https://unpkg.com/lucide-static@0.462.0/icons/' + icon + '.svg) center/contain no-repeat';
+  el.style.webkitMask = url; el.style.mask = url;
+});
+
+/* ================= Data (identical to the HealthHub Dashboard v2 design) ================= */
+const state = {
+  child: 'both',          // 'both' | 'evan' | 'jeffrey'
+  pop: null,              // 'bell' | 'add' | null
+  search: '',
+  vax: null,              // { step, method, name, dose, date, provider, savedDtap }
+  dtapDone: false,
+  added: { evan: [], jeffrey: [], both: [] }
+};
+
+function getData() {
+  const DATA = {
+    evan: {
+      name: 'Evan', full: 'Evan Miller', meta: 'Age 5 · DOB Mar 12, 2021', avBg: '#8bf1e6', avColor: '#00201d',
+      appts: [
+        { t: 'Annual checkup', p: 'Dr. Sarah Okafor · Lakeside Pediatrics', mo: 'JUL', day: '22', time: '9:30 AM' },
+        { t: 'Dental cleaning', p: 'Dr. Mei Tan · Bright Smiles Dental', mo: 'AUG', day: '4', time: '2:00 PM' }
+      ],
+      overdue: state.dtapDone ? [] : [{ name: 'DTaP — Dose 5 of 5', due: 'Was due Apr 15, 2026', days: '90 days overdue' }],
+      incomplete: [
+        { f: 'Insurance member ID', d: 'Profile · field missing' },
+        { f: 'Peanut allergy severity', d: 'Allergies · needs review' }
+      ],
+      allergies: [
+        { label: 'Peanuts · Severe', bg: '#FFF1D6', color: '#8a5a00' },
+        { label: 'Pollen · Mild', bg: '#ededf3', color: '#424750' }
+      ],
+      meds: [{ label: 'Cetirizine 5 mg · once daily', bg: '#d8f5f1', color: '#00504a' }],
+      conditions: [{ label: 'None recorded', bg: '#ededf3', color: '#737781' }],
+      recent: [
+        { t: 'MMR — Dose 2', c: 'Immunization', date: 'Jul 8, 2026', b: 'Added', bBg: '#E1F3E7', bC: '#1e7d46' },
+        { t: 'Visit summary — Lakeside Pediatrics', c: 'Medical history', date: 'Jul 2, 2026', b: 'AI extracted', bBg: '#d5e3ff', bC: '#144780' },
+        { t: 'Pollen allergy', c: 'Allergies', date: 'Jun 20, 2026', b: 'Updated', bBg: '#ededf3', bC: '#424750' }
+      ]
+    },
+    jeffrey: {
+      name: 'Jeffrey', full: 'Jeffrey Miller', meta: 'Age 9 · DOB Nov 2, 2016', avBg: '#ffdeac', avColor: '#281900',
+      appts: [{ t: 'Vision exam', p: 'Dr. Alan Reyes · ClearView Optometry', mo: 'JUL', day: '30', time: '11:00 AM' }],
+      overdue: [],
+      incomplete: [{ f: 'Primary doctor', d: 'Profile · field missing' }],
+      allergies: [{ label: 'No known allergies', bg: '#E1F3E7', color: '#1e7d46' }],
+      meds: [{ label: 'Albuterol inhaler · as needed', bg: '#d8f5f1', color: '#00504a' }],
+      conditions: [{ label: 'Mild asthma', bg: '#ededf3', color: '#424750' }],
+      recent: [
+        { t: 'Influenza vaccine', c: 'Immunization', date: 'Jun 15, 2026', b: 'Added', bBg: '#E1F3E7', bC: '#1e7d46' },
+        { t: 'Asthma action plan', c: 'Medical history', date: 'May 30, 2026', b: 'AI extracted', bBg: '#d5e3ff', bC: '#144780' }
+      ]
+    }
+  };
+  const E = DATA.evan, J = DATA.jeffrey;
+  DATA.both = {
+    name: 'Both kids', full: 'Evan & Jeffrey', meta: 'Family attention overview', initial: 'EJ', avBg: '#d5e3ff', avColor: '#144780',
+    appts: [...E.appts.map(a => ({ ...a, p: 'Evan · ' + a.p })), ...J.appts.map(a => ({ ...a, p: 'Jeffrey · ' + a.p }))],
+    overdue: [...E.overdue.map(v => ({ ...v, name: 'Evan — ' + v.name })), ...J.overdue.map(v => ({ ...v, name: 'Jeffrey — ' + v.name }))],
+    incomplete: [...E.incomplete.map(r => ({ ...r, d: 'Evan · ' + r.d })), ...J.incomplete.map(r => ({ ...r, d: 'Jeffrey · ' + r.d }))],
+    allergies: [...E.allergies.map(c => ({ ...c, label: 'Evan · ' + c.label })), ...J.allergies.map(c => ({ ...c, label: 'Jeffrey · ' + c.label }))],
+    meds: [...E.meds.map(c => ({ ...c, label: 'Evan · ' + c.label })), ...J.meds.map(c => ({ ...c, label: 'Jeffrey · ' + c.label }))],
+    conditions: [...E.conditions.filter(c => c.label !== 'None recorded').map(c => ({ ...c, label: 'Evan · ' + c.label })), ...J.conditions.map(c => ({ ...c, label: 'Jeffrey · ' + c.label }))],
+    recent: [...E.recent.map(r => ({ ...r, c: 'Evan · ' + r.c })), ...J.recent.map(r => ({ ...r, c: 'Jeffrey · ' + r.c }))]
+  };
+  return DATA;
+}
+
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+/* ================= Render ================= */
+function renderPills() {
+  const DATA = getData();
+  document.getElementById('pills').innerHTML =
+    ['both', 'evan', 'jeffrey'].map(id => {
+      const c = DATA[id]; const act = id === state.child;
+      return '<button class="pill' + (act ? ' active' : '') + '" data-child="' + id + '">' +
+        '<span class="pill-avatar" style="background:' + c.avBg + ';color:' + c.avColor + '">' + (c.initial || c.name[0]) + '</span>' +
+        '<span class="pill-name">' + esc(c.name) + '</span></button>';
+    }).join('') +
+    '<button class="add-child" title="Add child">' + iconHTML('plus', '#737781', 16) + '</button>';
+  document.querySelectorAll('#pills .pill').forEach(p =>
+    p.addEventListener('click', e => { e.stopPropagation(); state.child = p.dataset.child; state.pop = null; render(); }));
+}
+
+function renderBell() {
+  const el = document.getElementById('bellPop');
+  if (state.pop !== 'bell') { el.innerHTML = ''; return; }
+  const notifs = [
+    { t: 'DTaP booster overdue for Evan', d: 'Dose 5 was due Apr 15 — 90 days overdue', time: 'Today', dot: '#B26E00', bg: '#FFFAF1' },
+    { t: 'Appointment reminder — Evan', d: 'Annual checkup · Jul 22, 9:30 AM', time: 'Yesterday', dot: '#003466', bg: '#f8faff' },
+    { t: 'Jeffrey’s profile is incomplete', d: 'Primary doctor is missing', time: 'Jul 10', dot: '#737781', bg: '#ffffff' }
+  ];
+  el.innerHTML = '<div class="bell-pop" id="bellPopBox">' +
+    '<div class="bell-pop-head"><span>Notifications</span><a href="#">Mark all read</a></div>' +
+    notifs.map(n => '<div class="notif" style="background:' + n.bg + '">' +
+      '<span class="notif-dot" style="background:' + n.dot + '"></span>' +
+      '<div style="flex:1;min-width:0"><div class="notif-t">' + esc(n.t) + '</div><div class="notif-d">' + esc(n.d) + '</div></div>' +
+      '<span class="notif-time">' + n.time + '</span></div>').join('') +
+    '<div class="bell-pop-foot"><a href="#">Notification settings</a></div></div>';
+  document.getElementById('bellPopBox').addEventListener('click', e => e.stopPropagation());
+}
+
+function renderAddPop() {
+  const el = document.getElementById('addPop');
+  if (state.pop !== 'add') { el.innerHTML = ''; return; }
+  const opts = [
+    { icon: 'file-text', bg: '#d5e3ff', ic: '#144780', t: 'Medical record', d: 'Visit summaries, conditions', act: null },
+    { icon: 'syringe', bg: '#d8f5f1', ic: '#00504a', t: 'Vaccine record', d: 'Immunizations & doses', act: 'vax' },
+    { icon: 'pill', bg: '#FFF1D6', ic: '#8a5a00', t: 'Medication', d: 'Dosage & schedule', act: null },
+    { icon: 'calendar-days', bg: '#ededf3', ic: '#424750', t: 'Appointment', d: 'Upcoming visits', act: null }
+  ];
+  el.innerHTML = '<div class="add-pop" id="addPopBox"><div class="add-pop-label">Smart add</div>' +
+    opts.map((o, i) => '<div class="add-opt" data-i="' + i + '">' +
+      '<div class="tile" style="background:' + o.bg + '">' + iconHTML(o.icon, o.ic, 19) + '</div>' +
+      '<div><div class="add-opt-t">' + esc(o.t) + '</div><div class="add-opt-d">' + esc(o.d) + '</div></div></div>').join('') +
+    '</div>';
+  const box = document.getElementById('addPopBox');
+  box.addEventListener('click', e => e.stopPropagation());
+  box.querySelectorAll('.add-opt').forEach(opt =>
+    opt.addEventListener('click', () => {
+      if (opts[opt.dataset.i].act === 'vax') {
+        state.vax = { step: 1, method: null, name: '', dose: '', date: '', provider: '' };
+        state.pop = null; render();
+      }
+    }));
+}
+
+function renderContent() {
+  const DATA = getData();
+  const k = DATA[state.child];
+  const hasOv = k.overdue.length > 0;
+  const childFirst = state.child === 'both' ? 'everyone' : k.name;
+  const recent = [...state.added[state.child], ...k.recent]
+    .filter(r => (r.t + ' ' + r.c).toLowerCase().includes(state.search.trim().toLowerCase()));
+
+  let html = '';
+
+  // Title row
+  html += '<div class="title-row"><div>' +
+    '<div class="eyebrow">Dashboard</div>' +
+    '<h1 class="page-title">' + esc(k.full) + '</h1>' +
+    '<div class="page-meta">' + esc(k.meta) + '</div></div>' +
+    '<button class="btn-outline-teal">' + iconHTML('printer', '#006a63', 18) + 'Export &amp; Print</button></div>';
+
+  // Alert banner
+  if (hasOv) {
+    html += '<div class="alert-banner">' +
+      '<div class="alert-ico">' + iconHTML('triangle-alert', '#8a5a00', 22) + '</div>' +
+      '<div style="flex:1;min-width:0"><div class="alert-title">Overdue vaccine — action required</div>' +
+      '<div class="alert-body">Evan’s DTaP (dose 5 of 5) was due Apr 15, 2026 — 90 days overdue.</div></div>' +
+      '<button class="btn-navy" style="flex:none">View record</button>' +
+      '<button class="btn-ghost-amber" style="flex:none">Remind me later</button></div>';
+  }
+
+  // Profile card
+  const col = (label, chips) => '<div><div class="col-label">' + label + '</div><div class="chips">' +
+    chips.map(c => '<span class="chip" style="background:' + c.bg + ';color:' + c.color + '">' + esc(c.label) + '</span>').join('') +
+    '</div></div>';
+  html += '<div class="card">' +
+    '<div class="profile-grid">' + col('Allergies', k.allergies) + col('Medications', k.meds) + col('Conditions', k.conditions) + '</div>' +
+    '<div class="last-updated">Last updated · Jul 12, 2026</div></div>';
+
+  // 3-col grid
+  html += '<div class="grid3">';
+
+  // appointments
+  html += '<div class="card"><div class="card-head"><h3>Upcoming appointments</h3><span class="count-badge">' + k.appts.length + '</span></div>' +
+    '<div class="card-list">' +
+    k.appts.map(a => '<div class="appt">' +
+      '<div class="appt-date"><span class="appt-mo">' + a.mo + '</span><span class="appt-day">' + a.day + '</span></div>' +
+      '<div class="appt-info"><div class="appt-t">' + esc(a.t) + '</div><div class="appt-p">' + esc(a.p) + '</div></div>' +
+      '<span class="appt-time">' + a.time + '</span></div>').join('') +
+    '<a class="card-link" href="#">View all appointments →</a></div></div>';
+
+  // overdue vaccines
+  html += '<div class="card"><div class="card-head"><h3>Overdue vaccines</h3>' +
+    '<span class="count-badge' + (hasOv ? ' amber' : '') + '">' + k.overdue.length + '</span></div>' +
+    '<div class="card-list">' +
+    (hasOv
+      ? k.overdue.map(v => '<div class="vax-row">' +
+          '<div class="tile" style="background:#ffdeac">' + iconHTML('syringe', '#8a5a00', 20) + '</div>' +
+          '<div class="vax-info"><div class="vax-name">' + esc(v.name) + '</div><div class="vax-due">' + esc(v.due) + '</div></div>' +
+          '<span class="days-chip">' + esc(v.days) + '</span></div>').join('')
+      : '<div class="no-overdue">' + iconHTML('circle-check', '#00504a', 22) + '<div>No overdue vaccines — ' + esc(childFirst) + ' is up to date.</div></div>') +
+    '<a class="card-link" href="#">View immunization schedule →</a></div></div>';
+
+  // incomplete records
+  html += '<div class="card"><div class="card-head"><h3>Incomplete records</h3><span class="count-badge">' + k.incomplete.length + '</span></div>' +
+    '<div class="card-list">' +
+    k.incomplete.map(r => '<div class="rec">' +
+      '<div class="tile" style="background:#ededf3">' + iconHTML('clipboard-list', '#424750', 20) + '</div>' +
+      '<div style="flex:1;min-width:0"><div class="rec-f">' + esc(r.f) + '</div><div class="rec-d">' + esc(r.d) + '</div></div>' +
+      '<a class="card-link" href="#">Complete</a></div>').join('') +
+    '<a class="card-link" href="#">Review profile →</a></div></div>';
+
+  html += '</div>'; // grid3
+
+  // recent records
+  html += '<div class="card recent-card"><div class="recent-head"><h3>Recent records</h3><span class="recent-hint">Filtered by search above</span></div>' +
+    (recent.length
+      ? recent.map(r => '<div class="recent-row">' +
+          '<div style="flex:1;min-width:0"><div class="recent-t">' + esc(r.t) + '</div><div class="recent-c">' + esc(r.c) + '</div></div>' +
+          '<span class="status-badge" style="background:' + r.bBg + ';color:' + r.bC + '">' + esc(r.b) + '</span>' +
+          '<span class="recent-date">' + esc(r.date) + '</span></div>').join('')
+      : '<div class="recent-empty">No records match “' + esc(state.search) + '”.</div>') +
+    '</div>';
+
+  document.getElementById('content').innerHTML = html;
+}
+
+/* ================= Vaccine modal ================= */
+function renderModal() {
+  const root = document.getElementById('modalRoot');
+  const v = state.vax;
+  if (!v) { root.innerHTML = ''; return; }
+  const DATA = getData();
+  const k = DATA[state.child];
+  const title = v.step === 3 ? 'Vaccine record' : (v.step === 2 ? (v.method === 'scan' ? 'Review extracted details' : 'New vaccine record') : 'Add a vaccine record');
+
+  let body = '';
+  if (v.step === 1) {
+    body =
+      '<div style="display:flex;flex-direction:column;gap:10px">' +
+      '<button class="choice scan" id="vaxScan">' +
+        '<div class="tile" style="background:#d5e3ff">' + iconHTML('camera', '#144780', 22) + '</div>' +
+        '<div style="flex:1;text-align:left"><div class="choice-t">Scan or upload a record</div>' +
+        '<div class="choice-d">Photo of a vaccine card or clinic printout — we extract the details</div></div>' +
+        '<span class="ai-chip">AI</span></button>' +
+      '<button class="choice" id="vaxManual">' +
+        '<div class="tile" style="background:#ededf3">' + iconHTML('pencil-line', '#424750', 22) + '</div>' +
+        '<div style="flex:1;text-align:left"><div class="choice-t">Enter manually</div>' +
+        '<div class="choice-d">Type the vaccine, dose, and date yourself</div></div></button>' +
+      '</div>';
+  } else if (v.step === 2) {
+    body =
+      (v.method === 'scan'
+        ? '<div class="scan-note">' + iconHTML('sparkles', '#144780', 20) +
+          '<div>Details extracted from <strong>vaccine-card.jpg</strong> — check each field before saving.</div></div>'
+        : '') +
+      '<div class="form-grid">' +
+      '<div class="field full"><label>Vaccine</label><input id="vaxName" placeholder="e.g. DTaP" value="' + esc(v.name) + '"></div>' +
+      '<div class="field"><label>Dose</label><input id="vaxDose" placeholder="e.g. 5 of 5" value="' + esc(v.dose) + '"></div>' +
+      '<div class="field"><label>Date given</label><input id="vaxDate" placeholder="Jul 14, 2026" value="' + esc(v.date) + '"></div>' +
+      '<div class="field full"><label>Provider</label><input id="vaxProvider" placeholder="Clinic or doctor" value="' + esc(v.provider) + '"></div>' +
+      '</div>' +
+      '<div class="modal-foot">' +
+      '<button class="btn-back" id="vaxBack">Back</button>' +
+      '<button class="btn-save" id="vaxSave"' + (v.name.trim() ? '' : ' disabled') + '>Save record</button>' +
+      '</div>';
+  } else {
+    const t = v.savedDtap ? 'Recorded — Evan is up to date!' : 'Vaccine record saved';
+    const d = v.savedDtap
+      ? 'DTaP dose 5 of 5 was added to Evan’s immunizations. The overdue alert has been cleared.'
+      : 'It was added to the immunization history and appears in Recent records.';
+    body = '<div class="success">' +
+      '<div class="success-ico">' + iconHTML('circle-check', '#00504a', 32) + '</div>' +
+      '<div class="success-t">' + t + '</div><div class="success-d">' + d + '</div>' +
+      '<button class="btn-navy" id="vaxDone" style="padding:12px 28px">Done</button></div>';
+  }
+
+  root.innerHTML =
+    '<div class="overlay" id="vaxOverlay"><div class="modal" id="vaxModal">' +
+    '<div class="modal-head">' +
+    '<div class="tile" style="background:#d8f5f1;width:40px;height:40px">' + iconHTML('syringe', '#00504a', 20) + '</div>' +
+    '<div style="flex:1"><div class="modal-title">' + title + '</div><div class="modal-sub">Adding for ' + esc(k.full) + '</div></div>' +
+    '<button class="modal-x" id="vaxClose">' + iconHTML('x', '#424750', 16) + '</button>' +
+    '</div>' + body + '</div></div>';
+
+  document.getElementById('vaxOverlay').addEventListener('click', () => { state.vax = null; render(); });
+  document.getElementById('vaxModal').addEventListener('click', e => e.stopPropagation());
+  document.getElementById('vaxClose').addEventListener('click', () => { state.vax = null; render(); });
+
+  if (v.step === 1) {
+    document.getElementById('vaxScan').addEventListener('click', () => {
+      state.vax = { step: 2, method: 'scan', name: 'DTaP', dose: '5 of 5', date: 'Jul 14, 2026', provider: 'Lakeside Pediatrics — Dr. Sarah Okafor' };
+      render();
+    });
+    document.getElementById('vaxManual').addEventListener('click', () => {
+      state.vax = { step: 2, method: 'manual', name: '', dose: '', date: '', provider: '' };
+      render();
+    });
+  } else if (v.step === 2) {
+    const saveBtn = document.getElementById('vaxSave');
+    const bind = (id, key) => document.getElementById(id).addEventListener('input', e => {
+      state.vax[key] = e.target.value;
+      if (key === 'name') saveBtn.disabled = !e.target.value.trim();
+    });
+    bind('vaxName', 'name'); bind('vaxDose', 'dose'); bind('vaxDate', 'date'); bind('vaxProvider', 'provider');
+    document.getElementById('vaxBack').addEventListener('click', () => { state.vax.step = 1; render(); });
+    saveBtn.addEventListener('click', () => {
+      if (!state.vax.name.trim()) return;
+      const vv = state.vax;
+      const tgt = state.child === 'both' ? 'evan' : state.child;
+      const isDtap = /dtap/i.test(vv.name) && tgt === 'evan';
+      const rec = {
+        t: vv.name + (vv.dose ? ' — Dose ' + vv.dose.replace(/^dose\s*/i, '') : ''),
+        c: 'Immunization', date: vv.date || 'Jul 14, 2026',
+        b: vv.method === 'scan' ? 'AI extracted' : 'Added',
+        bBg: vv.method === 'scan' ? '#d5e3ff' : '#E1F3E7',
+        bC: vv.method === 'scan' ? '#144780' : '#1e7d46'
+      };
+      state.added[tgt] = [rec, ...state.added[tgt]];
+      state.added.both = [{ ...rec, c: (tgt === 'evan' ? 'Evan · ' : 'Jeffrey · ') + rec.c }, ...state.added.both];
+      if (isDtap) state.dtapDone = true;
+      state.vax = { ...vv, step: 3, savedDtap: isDtap };
+      render();
+    });
+    if (v.method === 'manual' && !v.name) document.getElementById('vaxName').focus();
+  } else {
+    document.getElementById('vaxDone').addEventListener('click', () => { state.vax = null; render(); });
+  }
+}
+
+/* ================= Wiring ================= */
+function render() { renderPills(); renderBell(); renderAddPop(); renderContent(); renderModal(); }
+
+document.getElementById('searchInput').addEventListener('input', e => { state.search = e.target.value; renderContent(); });
+document.getElementById('bellBtn').addEventListener('click', e => {
+  e.stopPropagation(); state.pop = state.pop === 'bell' ? null : 'bell'; renderBell(); renderAddPop();
+});
+document.getElementById('fabBtn').addEventListener('click', e => {
+  e.stopPropagation(); state.pop = state.pop === 'add' ? null : 'add'; renderBell(); renderAddPop();
+});
+document.addEventListener('click', () => { if (state.pop) { state.pop = null; renderBell(); renderAddPop(); } });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { state.pop = null; state.vax = null; render(); }
+});
+
+render();
+</script>
+</body>
+</html>
