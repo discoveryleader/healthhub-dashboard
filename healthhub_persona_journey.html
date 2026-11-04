@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthHub — Persona & User Journey</title>
+<style>
+  :root{
+    --navy:#0f3d5c; --teal:#1c93c9; --teal-dk:#14507a;
+    --ink:#1f2733; --muted:#6b7885; --line:#e2e9ef;
+    --bg:#f4f7fa; --card:#ffffff;
+    --joy:#2b9e5e; --warn:#d98324; --pain:#c0453f;
+    --shadow:0 2px 14px rgba(15,61,92,.08);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Helvetica Neue',Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5;}
+  .wrap{max-width:1080px;margin:0 auto;padding:28px 20px 60px;}
+  header.hero{background:linear-gradient(120deg,var(--navy),var(--teal-dk));color:#fff;border-radius:16px;padding:30px 32px;box-shadow:var(--shadow);}
+  header.hero .tag{display:inline-block;background:rgba(255,255,255,.16);letter-spacing:2px;font-size:11px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:12px;}
+  header.hero h1{margin:0 0 6px;font-size:30px;}
+  header.hero p{margin:0;opacity:.9;font-size:15px;max-width:640px;}
+
+  .tabs{display:flex;gap:8px;margin:26px 0 18px;flex-wrap:wrap;}
+  .tab{cursor:pointer;border:1px solid var(--line);background:var(--card);padding:9px 18px;border-radius:30px;font-size:14px;font-weight:600;color:var(--teal-dk);transition:.15s;}
+  .tab:hover{border-color:var(--teal);}
+  .tab.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+  section.panel{display:none;}
+  section.panel.active{display:block;animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  /* Persona card */
+  .persona{background:var(--card);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;}
+  .persona .top{display:flex;gap:22px;padding:26px 28px;background:linear-gradient(120deg,#eaf4fa,#f4f7fa);border-bottom:1px solid var(--line);align-items:center;}
+  .avatar{width:96px;height:96px;border-radius:50%;flex:0 0 96px;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--teal),var(--navy));box-shadow:0 4px 12px rgba(15,61,92,.25);}
+  .avatar.alt{background:linear-gradient(135deg,#e0913a,#b5651d);}
+  .who h2{margin:0 0 3px;font-size:24px;color:var(--navy);}
+  .who .role{color:var(--teal-dk);font-weight:600;font-size:15px;}
+  .who .facts{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:20px;padding:3px 11px;font-size:12px;color:var(--muted);}
+  .quote{padding:18px 28px;font-size:17px;font-style:italic;color:var(--teal-dk);background:#f0f8fc;border-left:4px solid var(--teal);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+  .cell{padding:20px 28px;border-bottom:1px solid var(--line);}
+  .cell:nth-child(odd){border-right:1px solid var(--line);}
+  .cell h3{margin:0 0 9px;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--teal);}
+  .cell ul{margin:0;padding-left:18px;}
+  .cell li{margin:5px 0;font-size:14px;}
+  .meter{margin:7px 0;}
+  .meter .lbl{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px;}
+  .bar{height:7px;background:#e7eef3;border-radius:5px;overflow:hidden;}
+  .bar span{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--navy));border-radius:5px;}
+
+  /* Journey */
+  .journey-intro{background:var(--card);border-radius:14px;padding:20px 24px;box-shadow:var(--shadow);margin-bottom:22px;}
+  .journey-intro h2{margin:0 0 6px;color:var(--navy);font-size:22px;}
+  .journey-intro p{margin:0;color:var(--muted);font-size:14px;}
+
+  .stage-nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:4px;}
+  .emo-wrap{background:var(--card);border-radius:14px;box-shadow:var(--shadow);padding:18px 20px 8px;margin-bottom:22px;}
+  .emo-wrap h3{margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--teal);}
+  .legend{font-size:12px;color:var(--muted);margin-bottom:8px;}
+
+  .journey-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+  .jcard{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;border-top:5px solid var(--teal);}
+  .jcard .ph{padding:12px 14px 10px;background:linear-gradient(120deg,#eaf4fa,#f7fafc);}
+  .jcard .ph .num{font-size:12px;font-weight:700;color:var(--teal);}
+  .jcard .ph h4{margin:2px 0 0;font-size:15px;color:var(--navy);}
+  .jrow{padding:10px 14px;border-top:1px solid var(--line);}
+  .jrow .k{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin-bottom:4px;font-weight:700;}
+  .jrow ul{margin:0;padding-left:15px;}
+  .jrow li{font-size:12.5px;margin:3px 0;}
+  .jrow p{margin:0;font-size:12.5px;}
+  .emoji{font-size:20px;}
+  .op{background:#f0f9f3;}
+  .op .k{color:var(--joy);}
+  .pain .k{color:var(--pain);}
+
+  .footer{margin-top:34px;color:var(--muted);font-size:12px;text-align:center;}
+
+  @media(max-width:900px){
+    .journey-cards{grid-template-columns:1fr 1fr;}
+    .grid{grid-template-columns:1fr;}
+    .cell:nth-child(odd){border-right:none;}
+  }
+  @media(max-width:560px){
+    .journey-cards{grid-template-columns:1fr;}
+    .persona .top{flex-direction:column;text-align:center;}
+    .who .facts{justify-content:center;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <span class="tag">HealthHub · UX Artifacts</span>
+    <h1>Personas &amp; User Journey</h1>
+    <p>Grounded in the HealthHub PRD — a secure family health dashboard that helps caregivers centralize, organize, and share their children's health records on demand.</p>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-target="p-maria">👩 Primary · Maria</div>
+    <div class="tab" data-target="p-david">👨 Secondary · David</div>
+    <div class="tab" data-target="p-journey">🗺️ User Journey</div>
+  </div>
+
+  <!-- PRIMARY PERSONA -->
+  <section class="panel active" id="p-maria">
+    <div class="persona">
+      <div class="top">
+        <div class="avatar">MR</div>
+        <div class="who">
+          <h2>Maria Reyes</h2>
+          <div class="role">The Coordinating Parent · Primary persona</div>
+          <div class="facts">
+            <span class="chip">38 years old</span>
+            <span class="chip">Working parent</span>
+            <span class="chip">2 kids · ages 5 &amp; 9</span>
+            <span class="chip">Laptop + tablet</span>
+            <span class="chip">Suburban, dual-income household</span>
+          </div>
+        </div>
+      </div>
+      <div class="quote">“I just want to upload the vaccine form once and email a clean copy to the school without digging through three portals and a folder of paper.”</div>
+
+      <div class="grid">
+        <div class="cell">
+          <h3>Bio &amp; context</h3>
+          <p style="font-size:14px;margin:0;">Maria manages doctor visits, school forms, and camp paperwork for the whole family. Between work and two kids on different schedules, she's the household's default record-keeper — the one who gets the text that says "the immunization form is due Friday."</p>
+        </div>
+        <div class="cell">
+          <h3>Goals</h3>
+          <ul>
+            <li>Never miss a vaccine or form deadline</li>
+            <li>Produce required documents in minutes, not evenings</li>
+            <li>Keep each child's history accurate and in one place</li>
+            <li>Share only what a school or camp actually needs</li>
+          </ul>
+        </div>
+        <div class="cell">
+          <h3>Frustrations &amp; pain points</h3>
+          <ul>
+            <li>Records scattered across 3 provider portals + paper</li>
+            <li>Re-typing the same immunization data every enrollment season</li>
+            <li>No single, printable source of truth on demand</li>
+            <li>Fear of missing an overdue vaccine</li>
+          </ul>
+        </div>
+        <div class="cell">
+          <h3>Needs from HealthHub</h3>
+          <ul>
+            <li>Upload-and-extract so she doesn't type records manually</li>
+            <li>At-a-glance alerts: overdue vaccines, upcoming visits</li>
+            <li>One-click formatted export &amp; direct email</li>
+            <li>Per-child organization she can switch between fast</li>
+          </ul>
+        </div>
+        <div class="cell">
+          <h3>Tech comfort &amp; behavior</h3>
+          <div class="meter"><div class="lbl"><span>Digital confidence</span><span>Moderate–High</span></div><div class="bar"><span style="width:72%"></span></div></div>
+          <div class="meter"><div class="lbl"><span>Time available</span><span>Low</span></div><div class="bar"><span style="width:28%"></span></div></div>
+          <div class="meter"><div class="lbl"><span>Privacy sensitivity</span><span>High</span></div><div class="bar"><span style="width:88%"></span></div></div>
+          <p style="font-size:13px;color:var(--muted);margin:8px 0 0;">Uses web apps daily, mostly on laptop and tablet. Expects things to "just work" and distrusts anything that feels careless with her kids' data.</p>
+        </div>
+        <div class="cell">
+          <h3>Success looks like</h3>
+          <ul>
+            <li>Uploads a vaccine record once → clean copy emailed to school in seconds</li>
+            <li>Opens the dashboard and instantly sees nothing is overdue</li>
+            <li>Trusts that shared records show only what she selected</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECONDARY PERSONA -->
+  <section class="panel" id="p-david">
+    <div class="persona">
+      <div class="top">
+        <div class="avatar alt">DK</div>
+        <div class="who">
+          <h2>David Kim</h2>
+          <div class="role">The Co-Parent / Caregiver · Secondary persona</div>
+          <div class="facts">
+            <span class="chip">41 years old</span>
+            <span class="chip">Co-parent · separate household</span>
+            <span class="chip">Shared custody</span>
+            <span class="chip">Phone + laptop</span>
+            <span class="chip">Scoped access</span>
+          </div>
+        </div>
+      </div>
+      <div class="quote">“When the kids are with me and something comes up, I need to see their records — but only what I'm supposed to see.”</div>
+
+      <div class="grid">
+        <div class="cell">
+          <h3>Bio &amp; context</h3>
+          <p style="font-size:14px;margin:0;">David is a co-parent in a separate household (the pattern also fits a grandparent or nanny with caregiving duties). He shares responsibility during his custody time and needs to view — and sometimes update — records without duplicating or conflicting with the account owner's record-keeping.</p>
+        </div>
+        <div class="cell">
+          <h3>Goals</h3>
+          <ul>
+            <li>Stay informed on appointments and health status</li>
+            <li>Access the right child's records when caring for them</li>
+            <li>Avoid duplicate or contradictory records across homes</li>
+          </ul>
+        </div>
+        <div class="cell">
+          <h3>Frustrations &amp; pain points</h3>
+          <ul>
+            <li>Being out of the loop on visits and changes</li>
+            <li>Not knowing which household holds the latest form</li>
+            <li>Unclear boundaries on what he can see or change</li>
+          </ul>
+        </div>
+        <div class="cell">
+          <h3>Needs from HealthHub</h3>
+          <ul>
+            <li>Scoped, permissioned access to specific children</li>
+            <li>Clear, visible boundaries on his rights</li>
+            <li>Shared visibility of appointments and alerts</li>
+          </ul>
+        </div>
+        <div class="cell">
+          <h3>Tech comfort &amp; behavior</h3>
+          <div class="meter"><div class="lbl"><span>Digital confidence</span><span>Moderate</span></div><div class="bar"><span style="width:60%"></span></div></div>
+          <div class="meter"><div class="lbl"><span>Engagement frequency</span><span>Periodic</span></div><div class="bar"><span style="width:40%"></span></div></div>
+          <div class="meter"><div class="lbl"><span>Trust in boundaries</span><span>Needs reassurance</span></div><div class="bar"><span style="width:55%"></span></div></div>
+          <p style="font-size:13px;color:var(--muted);margin:8px 0 0;">Comes in around custody transitions and events, not daily. Values clarity over power — he wants to know exactly what he can and can't do.</p>
+        </div>
+        <div class="cell">
+          <h3>Success looks like</h3>
+          <ul>
+            <li>Accepts an invite and sees exactly the child(ren) he's granted</li>
+            <li>Checks upcoming appointments without calling the other parent</li>
+            <li>Understands his access can be adjusted or revoked at any time</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOURNEY -->
+  <section class="panel" id="p-journey">
+    <div class="journey-intro">
+      <h2>Maria's end-to-end journey</h2>
+      <p>From first hearing about HealthHub to becoming a returning user — mapped across five phases with her actions, touchpoints, mindset, emotional highs and lows, and the design opportunities each phase creates.</p>
+    </div>
+
+    <div class="emo-wrap">
+      <h3>Emotional journey</h3>
+      <div class="legend">Higher = more confident &amp; satisfied · Lower = more anxious or frustrated. Hover a point for the moment.</div>
+      <svg id="emoChart" viewBox="0 0 1000 220" width="100%" height="200" role="img" aria-label="Emotion curve across five journey phases"></svg>
+    </div>
+
+    <div class="journey-cards" id="jcards"></div>
+  </section>
+
+  <div class="footer">HealthHub · Persona &amp; Journey artifact — derived from the HealthHub PRD (v2.0). Illustrative personas for design and planning.</div>
+</div>
+
+<script>
+// ---- Tabs ----
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.target).classList.add('active');
+    if(t.dataset.target==='p-journey') drawEmo();
+  });
+});
+
+// ---- Journey data ----
+const phases=[
+  {num:'Phase 1',name:'Awareness & Sign-up',emo:0.45,emoji:'🤔',
+   actions:['Hears about HealthHub from another parent / school newsletter','Signs up with Google in the multi-step wizard','Sets up her first child\'s profile (Evan)'],
+   touch:['Login / Sign-up','Social login','Registration wizard'],
+   think:'“Could this finally replace my folder of paper? Let me see how much setup it takes.”',
+   pains:['Skeptical it\'s worth the effort','Wary of handing over kids\' health data'],
+   ops:['Fast social sign-in','Guided, skippable child-profile setup','Reassure on privacy up front']},
+  {num:'Phase 2',name:'Onboarding & First Record',emo:0.6,emoji:'📤',
+   actions:['Taps Smart Add → uploads Evan\'s vaccine PDF','AI extracts fields; she reviews beside the source','Fixes one flagged field, saves the record'],
+   touch:['Smart Add','Document upload','Extraction review'],
+   think:'“Wait — it read the whole form? I didn\'t have to type any of it.”',
+   pains:['Worried extraction will be wrong','Unsure what to do if a field looks off'],
+   ops:['Show source next to extracted data','Flag low-confidence fields clearly','Graceful fallback to manual entry']},
+  {num:'Phase 3',name:'Daily Awareness',emo:0.8,emoji:'😌',
+   actions:['Opens dashboard, switches between Evan & Jeffrey','Sees an overdue-vaccine alert for Jeffrey','Books the visit offline, logs the appointment'],
+   touch:['Home dashboard','Child selector','Alerts & appointments'],
+   think:'“Good — I can see at a glance that nothing\'s slipping through the cracks.”',
+   pains:['Doesn\'t want alert overload','Needs to trust "overdue" logic is right'],
+   ops:['Clear per-child panels & empty states','Conservative, source-cited vaccine logic','Configurable notifications']},
+  {num:'Phase 4',name:'Export & Share',emo:0.92,emoji:'🎉',
+   actions:['Camp asks for immunization records','Selects records → picks template → previews','Emails the formatted PDF straight to the camp'],
+   touch:['Export / print','Preview','Share & permissions'],
+   think:'“This just saved me an evening of photocopying. Done in under a minute.”',
+   pains:['Must be sure she shares only what\'s needed','Wants confirmation it actually sent'],
+   ops:['Preview before send','Permission controls, view-only default','Delivery confirmation + link fallback']},
+  {num:'Phase 5',name:'Retention & Coordination',emo:0.85,emoji:'🔁',
+   actions:['Invites co-parent David with scoped access','Returns weekly to check appointments','Adds new records as they arrive'],
+   touch:['Caregiver access','Notifications','Settings'],
+   think:'“Now David and I are finally on the same page — literally.”',
+   pains:['Wants to revoke access easily if needed','Needs it to stay effortless over time'],
+   ops:['Scoped, revocable caregiver access','Lightweight recurring value (reminders)','Frictionless ongoing record-adding']}
+];
+
+// ---- Render journey cards ----
+const jc=document.getElementById('jcards');
+jc.innerHTML=phases.map(p=>`
+  <div class="jcard">
+    <div class="ph"><div class="num">${p.num}</div><h4>${p.name}</h4></div>
+    <div class="jrow" style="text-align:center;"><span class="emoji">${p.emoji}</span></div>
+    <div class="jrow"><div class="k">Actions</div><ul>${p.actions.map(a=>`<li>${a}</li>`).join('')}</ul></div>
+    <div class="jrow"><div class="k">Touchpoints</div><ul>${p.touch.map(a=>`<li>${a}</li>`).join('')}</ul></div>
+    <div class="jrow"><div class="k">Thinking</div><p>${p.think}</p></div>
+    <div class="jrow pain"><div class="k">Pain points</div><ul>${p.pains.map(a=>`<li>${a}</li>`).join('')}</ul></div>
+    <div class="jrow op"><div class="k">Opportunities</div><ul>${p.ops.map(a=>`<li>${a}</li>`).join('')}</ul></div>
+  </div>`).join('');
+
+// ---- Emotion curve ----
+function drawEmo(){
+  const svg=document.getElementById('emoChart');
+  if(svg.dataset.done) return;
+  const W=1000,H=220,padX=70,padY=30;
+  const n=phases.length;
+  const x=i=>padX+(W-2*padX)*i/(n-1);
+  const y=v=>H-padY-(H-2*padY)*v;
+  // gridlines
+  let g='';
+  [0,0.5,1].forEach(v=>{g+=`<line x1="${padX}" y1="${y(v)}" x2="${W-padX}" y2="${y(v)}" stroke="#e7eef3" stroke-width="1"/>`;});
+  // smooth path
+  const pts=phases.map((p,i)=>[x(i),y(p.emo)]);
+  let d=`M ${pts[0][0]} ${pts[0][1]}`;
+  for(let i=0;i<pts.length-1;i++){
+    const [x1,y1]=pts[i],[x2,y2]=pts[i+1];
+    const cx=(x1+x2)/2;
+    d+=` C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`;
+  }
+  // area fill
+  let area=d+` L ${pts[n-1][0]} ${H-padY} L ${pts[0][0]} ${H-padY} Z`;
+  let dots='';
+  phases.forEach((p,i)=>{
+    dots+=`<circle cx="${x(i)}" cy="${y(p.emo)}" r="7" fill="#0f3d5c" stroke="#fff" stroke-width="2"><title>${p.name}: ${p.emoji}  —  ${p.think.replace(/"/g,'')}</title></circle>`;
+    dots+=`<text x="${x(i)}" y="${y(p.emo)-16}" text-anchor="middle" font-size="16">${p.emoji}</text>`;
+    dots+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="12" fill="#6b7885">${p.name}</text>`;
+  });
+  svg.innerHTML=`
+    <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1c93c9" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#1c93c9" stop-opacity="0.02"/>
+    </linearGradient></defs>
+    ${g}
+    <path d="${area}" fill="url(#ag)"/>
+    <path d="${d}" fill="none" stroke="#1c93c9" stroke-width="3" stroke-linecap="round"/>
+    ${dots}`;
+  svg.dataset.done='1';
+}
+</script>
+</body>
+</html>
